@@ -45,7 +45,7 @@ def solicita_jogada(tabuleiro):
 
     while True:
         try:  #? Verificação da posição da peça
-            peca = input('\tIndique o número da linha e a letra da coluna da peça que deseja mover: ').split(' ')
+            peca = input('\tIndique a letra da coluna e o número da linha da peça que deseja mover: ').split(' ')
             if ''.join(peca).lower() == 'x':
                 quit()
             elif ''.join(peca).lower() == 'm':
@@ -89,7 +89,7 @@ def solicita_jogada(tabuleiro):
 
     while True:
         try:  #? Verificação do movimento
-            mov = input('\tIndique o número da linha e a letra da coluna para onde deseja mover esta peça: ').split(' ')
+            mov = input('\tIndique a letra da coluna e o número da linha para onde deseja mover esta peça: ').split(' ')
             if ''.join(mov).lower() == 'x':
                 quit()
             elif ''.join(mov).lower() == 'm':
@@ -153,18 +153,31 @@ def movimenta_peca():
     
     while True:
         if tabuleiro_atual is not 0:
-            clear()
-            printa_tabuleiro(tabuleiro_atual)
-            posicoes = solicita_jogada(tabuleiro_atual)
+            fim_de_jogo = verifica_fim_de_jogo(tabuleiro)
 
-            if posicoes == 'm':
+            if fim_de_jogo[0] and fim_de_jogo[1] == 1:
+                printa_tabuleiro(tabuleiro_atual)
+                print("\tParabéns, você venceu!!!\n")
+                input("\tPressione qualquer tecla para voltar ao menu")
                 break
+            elif fim_de_jogo[0] and fim_de_jogo[1] == 0:
+                printa_tabuleiro(tabuleiro_atual)
+                print("\tInfelizmente não existem mais jogadas possíveis.")
+                input("\tPressione qualquer tecla para voltar ao menu")
+                break
+            else:
+                clear()
+                printa_tabuleiro(tabuleiro_atual)
+                posicoes = solicita_jogada(tabuleiro_atual)
 
-            pos_peca = [posicoes[0], letras_mov[posicoes[1]]]
-            pos_mov = [posicoes[2], letras_mov[posicoes[3]]]
+                if posicoes == 'm':
+                    break
 
-            tabuleiro_anterior = np.copy(tabuleiro_atual)
-            tabuleiro_atual = verifica_movimento(tabuleiro, pos_peca, pos_mov)
+                pos_peca = [posicoes[0], letras_mov[posicoes[1]]]
+                pos_mov = [posicoes[2], letras_mov[posicoes[3]]]
+
+                tabuleiro_anterior = np.copy(tabuleiro_atual)
+                tabuleiro_atual = verifica_movimento(tabuleiro, pos_peca, pos_mov)
 
         elif tabuleiro_anterior is not 0:
             clear()
@@ -228,9 +241,55 @@ def verifica_movimento(tabuleiro, peca, mov):
     return tabuleiro
 
 
-# def verifica_vitoria():
+def verifica_fim_de_jogo(tabuleiro):
+    linhas = tabuleiro.shape[0]
+    colunas = tabuleiro.shape[1]
 
+    pecas_restantes = 0
+    posicoes_peca = []
+    for i in range(1, linhas-1):
+        for j in range(1, colunas-1):
+            if tabuleiro[i,j] == ' O ':
+                pecas_restantes += 1
+                posicoes_peca.append((i,j))
 
+    mov_possivel = False
+    if pecas_restantes > 1:
+
+        posicoes_peca_linha = sorted(posicoes_peca)
+        lin = posicoes_peca_linha[0][0]
+        col = posicoes_peca_linha[0][1]
+        for pos in posicoes_peca_linha[1:]:
+            if (lin == pos[0] and abs(col - pos[1]) == 1):
+                if tabuleiro[pos[0], pos[1]+1] == '   ' or tabuleiro[lin, col-1] == '   ':
+                    mov_possivel = True
+                    break
+            lin = pos[0]
+            col = pos[1]
+        
+        posicoes_peca_coluna = sorted(posicoes_peca, key=retorna_segundo_elemento)
+        lin = posicoes_peca_coluna[0][0]
+        col = posicoes_peca_coluna[0][1]
+        for pos in posicoes_peca_coluna:
+            if col == pos[1] and abs(lin - pos[0]) == 1:
+                if tabuleiro[pos[0]+1, pos[1]] == '   ' or tabuleiro[lin-1, col] == '   ':
+                    mov_possivel = True
+                    break
+            lin = pos[0]
+            col = pos[1]
+
+    else:
+        return (True, 1)
+    
+    if mov_possivel:
+        return (False, 0)
+    else:
+        return (True, 0)
+    
+
+def retorna_segundo_elemento(elem):
+    return elem[1]
+    
 
 def mostra_instrucoes_jogo():
     print('\n\n\t\t\t------------ BEM VINDO AO JOGO RESTA UM ------------\n\n')
@@ -244,7 +303,7 @@ def mostra_instrucoes_jogo():
 \t- As peças são representadas pela letra O.\n \
 \t- Pressione a tecla 'x' a qualquer momento durante o jogo para sair e 'm' para voltar ao menu.\n\n")
 
-    input("\t Pressione qualquer coisa para voltar ao menu")
+    input("\t Pressione enter para voltar ao menu")
 
     
 def start():
