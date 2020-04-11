@@ -1,6 +1,12 @@
 import pygame, random
 from pygame.locals import *
 
+UP = 0
+RIGHT = 1
+DOWN = 2
+LEFT = 3
+
+
 def on_grid_random():
     x = random.randint(0,590)
     y = random.randint(0,590)
@@ -29,11 +35,6 @@ def set_direction(my_direction, snake):
     
     return snake[0]
 
-
-UP = 0
-RIGHT = 1
-DOWN = 2
-LEFT = 3
 
 pygame.init()
 screen = pygame.display.set_mode((600,600))
@@ -68,11 +69,11 @@ while True:
         if event.type == KEYDOWN:
             if event.key == K_UP and my_direction != DOWN:
                 my_direction = UP
-            if event.key == K_DOWN and my_direction != UP:
+            elif event.key == K_DOWN and my_direction != UP:
                 my_direction = DOWN
-            if event.key == K_LEFT and my_direction != RIGHT:
+            elif event.key == K_LEFT and my_direction != RIGHT:
                 my_direction = LEFT
-            if event.key == K_RIGHT and my_direction != LEFT:
+            elif event.key == K_RIGHT and my_direction != LEFT:
                 my_direction = RIGHT
 
 
@@ -119,7 +120,7 @@ while True:
     game_over_font = pygame.font.Font('freesansbold.ttf', 50)
     game_over_screen = game_over_font.render('Game Over', True, (255, 255, 255))
     game_over_rect = game_over_screen.get_rect()
-    game_over_rect.midtop = (600 / 2, 10)
+    game_over_rect.midtop = (600 // 2, 10)
     screen.blit(game_over_screen, game_over_rect)
     pygame.display.update()
     pygame.time.wait(60)
