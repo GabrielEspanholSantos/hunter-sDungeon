@@ -63,52 +63,53 @@ screen = pygame.display.set_mode((600, 600))
 def cursor_moves(direction):
     global x1, y1, x2, y2
 
+    # check the cursor movement direction
     if direction == UP:
         y1 -= 70
         y2 -= 70
-        if (x1, y1) in invalid_moves:
+        if (x1, y1) in invalid_moves:  # if the new strating point is a invalid move, return to the initial point
             y1 += 70
             y2 += 70
 
     elif direction == DOWN:
         y1 += 70
         y2 += 70
-        if (x1, y1) in invalid_moves:
+        if (x1, y1) in invalid_moves:  # if the new strating point is a invalid move, return to the initial point
             y1 -= 70
             y2 -= 70
 
     elif direction == LEFT:
         x1 -= 70
         x2 -= 70
-        if (x1, y1) in invalid_moves:
+        if (x1, y1) in invalid_moves:  # if the new strating point is a invalid move, return to the initial point
             x1 += 70
             x2 += 70
 
     elif direction == RIGHT:
         x1 += 70
         x2 += 70
-        if (x1, y1) in invalid_moves:
+        if (x1, y1) in invalid_moves:  # if the new strating point is a invalid move, return to the initial point
             x1 -= 70
             x2 -= 70
 
     return [(x1,y1), (x1,y2), (x2,y2), (x2,y1)]
         
 
-def draw_board(bg_img, piece, b_square):
+def draw_game_board(bg_img, piece, b_square):
     screen.blit(bg_img, (0,0))
 
     pygame.draw.rect(screen, (77, 26, 0), [(55, 55), (490,490)])
 
-    for pos, is_piece in tab_positions.items():
+    for pos, is_piece in tab_positions.items():  # plot pieces int the board
         if is_piece:
             screen.blit(piece, pos)
         else:
             screen.blit(b_square, pos)
 
-    for x in range(55, 546, 70):
+    for x in range(55, 546, 70):  # draws horizontal lines
         pygame.draw.line(screen, (20, 20, 20), (x, 55), (x, 545), 2)
     
-    for y in range(55, 546, 70):
+    for y in range(55, 546, 70):  # draws horizontal lines
         pygame.draw.line(screen, (20, 20, 20), (55, y), (545, y), 2)
 
     pygame.draw.line(screen, (97, 51, 24), (55, 55), (55, 545), 4)
@@ -118,6 +119,7 @@ def draw_board(bg_img, piece, b_square):
 
 
 def set_cursor(key_pressed, direction):
+    # set the new cursor position 
     if key_pressed:
         cursor = cursor_moves(direction)
     else:
@@ -130,73 +132,81 @@ def select_available_movements(curosr_at):
     green_b_square = pygame.Surface((70,70))
     green_b_square.fill((153, 255, 102))
 
-    move_sum = 140
-    next_piece_sum = 70
+    move_sum = 140  # value to sum to get in the available positions
+    next_piece_sum = 70  # value to sum to get in the piece next to the current piece
+
     sum_types = {'up': [(curosr_at[0], (curosr_at[1] - move_sum)), (curosr_at[0], (curosr_at[1] - next_piece_sum))],
                  'down': [(curosr_at[0], (curosr_at[1] + move_sum)), (curosr_at[0], (curosr_at[1] + next_piece_sum))],
                  'left': [((curosr_at[0] - move_sum), curosr_at[1]), ((curosr_at[0] - next_piece_sum), curosr_at[1])],
                  'right': [((curosr_at[0] + move_sum), curosr_at[1]), ((curosr_at[0] + next_piece_sum), curosr_at[1])]
                 }
 
+    # list of values that mark the available position(s) to move in
     to_paint = [v[0] for v in list(sum_types.values()) if v[0] in list(tab_positions) and tab_positions[v[1]]]
 
     if to_paint:
         for i in to_paint:
-            if not tab_positions[i]:
-                
+            if not tab_positions[i]:  # plot a green square in the available position(s)
                 screen.blit(green_b_square, i)
                 pygame.draw.lines(screen, (102, 255, 26), True, [(i[0], i[1]), (i[0], i[1]+70), (i[0]+70, i[1]+70), (i[0]+70, i[1])], 3)
     
     return to_paint
 
 
-def move_piece(piece, possible_moves, cursor, cursor_at):
+def move_piece(piece, possible_moves, cursor, piece_position):
     global tab_positions
-    if cursor[0] in possible_moves:
-        tab_positions[cursor[0]] = True
-        tab_positions[cursor_at[0]] = False
+    if cursor[0] in possible_moves:  # check if the cursor is in a available location for the piece to move
+        # Removes the piece between the cursor and the current-piece's position (capture)
+        if cursor[0][0] > piece_position[0][0]:
+            tab_positions[(piece_position[0][0]+70, piece_position[0][1])] = False
+        elif cursor[0][0] < piece_position[0][0]:
+            tab_positions[(piece_position[0][0]-70, piece_position[0][1])] = False
+        elif cursor[0][1] > piece_position[0][1]:
+            tab_positions[(piece_position[0][0], piece_position[0][1]+70)] = False
+        elif cursor[0][1] < piece_position[0][1]:
+            tab_positions[(piece_position[0][0], piece_position[0][1]-70)] = False
         
-        if cursor[0][0] > cursor_at[0][0]:
-            tab_positions[(cursor_at[0][0]+70, cursor_at[0][1])] = False
-        elif cursor[0][0] < cursor_at[0][0]:
-            tab_positions[(cursor_at[0][0]-70, cursor_at[0][1])] = False
-        elif cursor[0][1] > cursor_at[0][1]:
-            tab_positions[(cursor_at[0][0], cursor_at[0][1]+70)] = False
-        elif cursor[0][1] < cursor_at[0][1]:
-            tab_positions[(cursor_at[0][0], cursor_at[0][1]-70)] = False
+        tab_positions[piece_position[0]] = False  # removes the piece from its current position
+        
+        tab_positions[cursor[0]] = True  # places the piece in the cursor's position
         
 
 def check_game_s_end(possible_moves):
     if possible_moves:
         return False
     else:
-        remaining = [k for k, v in list(tab_positions.items()) if v]
+        rem = [k for k, v in list(tab_positions.items()) if v]  # Gets the remainig pieces' positions in the board
 
-    if len(remaining) == 1:
+    # Method to catch linear game over is not working
+    if len(rem) == 1:
         return 'Victory'
     else:
         end_game = True
-        for i in range(0, len(remaining)):
-            for j in range(i+1, len(remaining)):
-                if remaining[i][0] > remaining[j][0]:
-                    if remaining[i][0] - remaining[j][0] == 70:
-                        end_game = False
-                        break
+        for i in range(0, len(rem)):
+            for j in range(i+1, len(rem)):
+                if rem[i][0] > rem[j][0] and rem[i][1] == rem[j][1]:
+                    if not tab_positions.get((rem[i][0]+70, rem[i][1])) or not tab_positions.get((rem[j][0]-70, rem[j][1])):
+                        if rem[i][0] - rem[j][0] == 70:
+                            end_game = False
+                            break
 
-                elif remaining[i][0] < remaining[j][0]:
-                    if remaining[j][0] - remaining[i][0] == 70:
-                        end_game = False
-                        break
+                elif rem[i][0] < rem[j][0] and rem[i][1] == rem[j][1]:
+                    if not tab_positions.get((rem[i][0]-70, rem[i][1])) or not tab_positions.get((rem[j][0]+70, rem[j][1])):
+                        if rem[j][0] - rem[i][0] == 70:
+                            end_game = False
+                            break
                 
-                elif remaining[i][1] > remaining[j][1]:
-                    if remaining[i][1] - remaining[j][1] == 70:
-                        end_game = False
-                        break
+                elif rem[i][0] == rem[j][0] and rem[i][1] > rem[j][1]:
+                    if not tab_positions.get((rem[i][0], rem[i][1]+70)) or not tab_positions.get((rem[j][0], rem[j][1]-70)):
+                        if rem[i][1] - rem[j][1] == 70:
+                            end_game = False
+                            break
 
-                elif remaining[i][1] < remaining[j][1]:
-                    if remaining[j][1] - remaining[i][1] == 70:
-                        end_game = False
-                        break
+                elif rem[i][0] == rem[j][0] and rem[i][1] < rem[j][1]:
+                    if not tab_positions.get((rem[i][0], rem[i][1]-70)) or not tab_positions.get((rem[j][0], rem[j][1]+70)):
+                        if rem[j][1] - rem[i][1] == 70:
+                            end_game = False
+                            break
         if end_game:
             return 'end_game'
 
@@ -259,7 +269,7 @@ def montar_jogo():
                     cursor_select = False
                 
 
-        draw_board(bg, piece, white_b_square)
+        draw_game_board(bg, piece, white_b_square)
         cursor = set_cursor(key_pressed, cursor_direction)
 
         if cursor_select and tab_positions[cursor[0]]:
@@ -270,17 +280,19 @@ def montar_jogo():
             if check_game_s_end(possible_moves) == False:
                 pass
             elif check_game_s_end(possible_moves) == 'Victory':
-                victory_font = std_font.render('VICOTRY !!!', True, (0,0,0))
-                victory_rect = victory_font.get_rect()
+                victory_screen = std_font.render('VICOTRY !!!', True, (0,0,0))
+                victory_rect = victory_screen.get_rect()
                 victory_rect.midtop = (600 // 2, 175)
+                screen.blit(victory_screen, victory_rect)
                 pygame.display.update()
                 pygame.time.wait(700)
                 break
 
             elif check_game_s_end(possible_moves) == 'end_game':
-                go_font = std_font.render('GAME OVER', True, (0,0,0))
-                go_rect = go_font.get_rect()
-                go_rect.midtop = (600 // 2, 175)
+                game_over_screen = std_font.render('GAME OVER', True, (0,0,0))
+                game_over_rect = game_over_screen.get_rect()
+                game_over_rect.midtop = (600 // 2, 175)
+                screen.blit(game_over_screen, game_over_rect)
                 pygame.display.update()
                 pygame.time.wait(700)
                 break
