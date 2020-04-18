@@ -177,7 +177,7 @@ def check_game_s_end(possible_moves):
     else:
         rem = [k for k, v in list(tab_positions.items()) if v]  # Gets the remainig pieces' positions in the board
 
-    # Method to catch linear game over is not working
+    #! Method to catch linear game over is not working
     if len(rem) == 1:
         return 'Victory'
     else:
@@ -229,8 +229,8 @@ def montar_jogo():
     white_b_square = pygame.Surface((70,70))
     white_b_square.fill((221, 193, 136))
 
-    piece = pygame.image.load('c:/users/user/documents/python/hunter-sDungeon/game_piece.png').convert()
-    bg = pygame.image.load('c:/users/user/documents/python/hunter-sDungeon/beech-red.jpg').convert()
+    piece = pygame.image.load('c:/users/user/documents/python/hunter-sDungeon/peg-solitarie/game_piece.png').convert()
+    bg = pygame.image.load('c:/users/user/documents/python/hunter-sDungeon/peg-solitarie/beech-red.jpg').convert()
     
     global x1, y1, x2, y2
     cursor_pos = [x1, y1, x2, y2]
@@ -244,7 +244,9 @@ def montar_jogo():
 
         for event in pygame.event.get():
             if event.type == QUIT:
+                pygame.display.quit()
                 pygame.quit()
+                exit()
             
             if event.type == KEYDOWN:
                 if event.key == K_UP:
@@ -315,14 +317,14 @@ def desenha_menu():
     while True:
         for event in pygame.event.get():
             if event.type == QUIT:
+                pygame.display.quit()
                 pygame.quit()
+                exit()
 
             if event.type == KEYDOWN:
                 if event.key == K_UP:
-                    time_wait = 10
                     my_direction = UP
                 if event.key == K_DOWN:
-                    time_wait = 10
                     my_direction = DOWN
                 if event.key == K_RETURN or event.key == K_KP_ENTER:
                     enter = True
@@ -349,7 +351,6 @@ def desenha_menu():
         pygame.time.wait(250)
         pygame.display.update()
 
-        
         if my_direction == UP:
             play_font = std_b_font.render('Play', True, (0, 255, 0))
             play_rect = play_font.get_rect()
@@ -368,6 +369,7 @@ def desenha_menu():
             quit_rect.midtop = (600 // 2, 175)
             screen.blit(quit_font, quit_rect)
             if enter:
+                pygame.display.quit()
                 pygame.quit()
                 exit()
 
@@ -376,5 +378,3 @@ def desenha_menu():
     
 desenha_menu()
 
-
-pygame.quit()
