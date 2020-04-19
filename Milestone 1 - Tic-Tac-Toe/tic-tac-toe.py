@@ -10,17 +10,16 @@ def clear():
     
 
 def create_board():
-    board = {'1':' ','2':' ','3':' ','4':' ','5':' ','6':' ','7':' ','8':' ','9':' '}
-    
+    board = ['#',' ',' ',' ',' ',' ',' ',' ',' ',' ']
     return board
 
 
 def print_board(board):
-    print(tabs+' '+board['7']+' | '+board['8']+' | '+board['9']+' ')
+    print(tabs+' '+board[7]+' | '+board[8]+' | '+board[9]+' ')
     print(tabs+'-----------')
-    print(tabs+' '+board['4']+' | '+board['5']+' | '+board['6']+' ')
+    print(tabs+' '+board[4]+' | '+board[5]+' | '+board[6]+' ')
     print(tabs+'-----------')
-    print(tabs+' '+board['1']+' | '+board['2']+' | '+board['3']+' ')
+    print(tabs+' '+board[1]+' | '+board[2]+' | '+board[3]+' ')
 
 
 def alter_board(board, pos, symbol):
@@ -40,24 +39,24 @@ def check_victory(board, piece):
     draw = True
     
     for i in range(1,5):
-        for k in board.keys():
+        for k in range(1,10):
             if board[k] == ' ':
                 draw = False
 
-            if i == 1 and int(k) in [1,4,7]:
-                pos1 = int(k)
-            elif i == 2 and int(k) == 3:
-                pos1 = int(k)
-            elif i == 3 and int(k) in [1,2,3]:
-                pos1 = int(k)
-            elif i == 4 and int(k) == 1:
-                pos1 = int(k)
+            if i == 1 and k in [1,4,7]:
+                pos1 = k
+            elif i == 2 and k == 3:
+                pos1 = k
+            elif i == 3 and k in [1,2,3]:
+                pos1 = k
+            elif i == 4 and k == 1:
+                pos1 = k
             else:
                 continue
 
-            pos2 = str(pos1+i)
-            pos3 = str(pos1+(2*i))
-            pos1 = str(pos1)
+            pos2 = pos1+i
+            pos3 = pos2+i
+            
 
             if board[pos1] == piece and board[pos2] == piece and board[pos3] == piece:
                 victory = True
@@ -104,7 +103,8 @@ def init_game():
         print("It's player1's turn\n") if player1_turn else print("It's player2's turn\n")
         next_move = input('Choose your next position [1-9]: ')
         if next_move.isnumeric():
-            if int(next_move) > 0 and int(next_move) < 10:
+            next_move = int(next_move)
+            if next_move > 0 and next_move < 10:
                 if player1_turn:
                     moved, board, draw, victory = make_move(board, p1_symbol, next_move)
                     
