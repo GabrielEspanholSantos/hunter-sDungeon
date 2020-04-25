@@ -73,12 +73,16 @@ def make_game(best_score):
             if event.type == KEYDOWN:
                 if event.key == K_UP and my_direction != DOWN:
                     my_direction = UP
+                    break
                 elif event.key == K_DOWN and my_direction != UP:
                     my_direction = DOWN
+                    break
                 elif event.key == K_LEFT and my_direction != RIGHT:
                     my_direction = LEFT
+                    break
                 elif event.key == K_RIGHT and my_direction != LEFT:
                     my_direction = RIGHT
+                    break
 
 
         if collision(snake[0], apple_pos):

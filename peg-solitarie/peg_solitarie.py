@@ -183,7 +183,6 @@ def check_game_s_end(possible_moves, tab_positions):
         rem = [k for k, v in list(tab_positions.items()) if v]  # Gets the remainig pieces' positions in the board
     
     #? rem = remaining
-    #! Method to catch linear game over is not working
     if len(rem) == 1:
         return 'Victory'
     else:
