@@ -1,7 +1,8 @@
 import pygame
 from pygame.locals import *
 import time
-
+import os
+dir_name = os.path.join(os.path.dirname(__file__))
 
 
 UP = 0
@@ -11,39 +12,39 @@ RIGHT = 3
 x1, y1 = 195, 55
 x2, y2 = 265, 125
 
-tab_positions = {(195,55): True, 
-                 (265,55): True, 
-                 (335,55): True,
-                 (195,125): True, 
-                 (265,125): True, 
-                 (335,125): True,
-                 (55,195): True, 
-                 (125,195): True, 
-                 (195,195): True, 
-                 (265,195): True, 
-                 (335,195): True, 
-                 (405,195): True, 
-                 (475,195): True, 
-                 (55,265): True, 
-                 (125,265): True, 
-                 (195,265): True, 
-                 (265,265): False, 
-                 (335,265): True, 
-                 (405,265): True, 
-                 (475,265): True, 
-                 (55,335): True, 
-                 (125,335): True, 
-                 (195,335): True, 
-                 (265,335): True, 
-                 (335,335): True, 
-                 (405,335): True, 
-                 (475,335): True, 
-                 (195,405): True, 
-                 (265,405): True, 
-                 (335,405): True,
-                 (195,475): True, 
-                 (265,475): True, 
-                 (335,475): True,
+board = {(195,55): True, 
+         (265,55): True, 
+         (335,55): True,
+         (195,125): True, 
+         (265,125): True, 
+         (335,125): True,
+         (55,195): True, 
+         (125,195): True, 
+         (195,195): True, 
+         (265,195): True, 
+         (335,195): True, 
+         (405,195): True, 
+         (475,195): True, 
+         (55,265): True, 
+         (125,265): True, 
+         (195,265): True, 
+         (265,265): False, 
+         (335,265): True, 
+         (405,265): True, 
+         (475,265): True, 
+         (55,335): True, 
+         (125,335): True, 
+         (195,335): True, 
+         (265,335): True, 
+         (335,335): True, 
+         (405,335): True, 
+         (475,335): True, 
+         (195,405): True, 
+         (265,405): True, 
+         (335,405): True,
+         (195,475): True, 
+         (265,475): True, 
+         (335,475): True,
                 }
 
 invalid_moves = ((125,55), (125,125), (55,125),
@@ -95,7 +96,7 @@ def cursor_moves(direction):
     return [(x1,y1), (x1,y2), (x2,y2), (x2,y1)]
         
 
-def draw_game_board(bg_img, piece, b_square):
+def draw_game_board(bg_img, piece, b_square, tab_positions):
     screen.blit(bg_img, (0,0))
 
     pygame.draw.rect(screen, (77, 26, 0), [(55, 55), (490,490)])
@@ -128,7 +129,7 @@ def set_cursor(key_pressed, direction):
     return cursor
 
 
-def select_available_movements(curosr_at):
+def select_available_movements(curosr_at, tab_positions):
     green_b_square = pygame.Surface((70,70))
     green_b_square.fill((153, 255, 102))
 
@@ -142,7 +143,12 @@ def select_available_movements(curosr_at):
                 }
 
     # list of values that mark the available position(s) to move in
-    to_paint = [v[0] for v in list(sum_types.values()) if v[0] in list(tab_positions) and tab_positions[v[1]]]
+    to_paint = []
+    for v in sum_types.values():
+        if v[0] in list(tab_positions) and not tab_positions[v[0]] and tab_positions[v[1]]:
+            to_paint.append(v[0])
+
+    # to_paint = [v[0] for v in list(sum_types.values()) if v[0] in list(tab_positions) and not tab_positions[v[0]] and tab_positions[v[1]]]
 
     if to_paint:
         for i in to_paint:
@@ -153,8 +159,7 @@ def select_available_movements(curosr_at):
     return to_paint
 
 
-def move_piece(piece, possible_moves, cursor, piece_position):
-    global tab_positions
+def move_piece(piece, possible_moves, cursor, piece_position, tab_positions):
     if cursor[0] in possible_moves:  # check if the cursor is in a available location for the piece to move
         # Removes the piece between the cursor and the current-piece's position (capture)
         if cursor[0][0] > piece_position[0][0]:
@@ -171,12 +176,13 @@ def move_piece(piece, possible_moves, cursor, piece_position):
         tab_positions[cursor[0]] = True  # places the piece in the cursor's position
         
 
-def check_game_s_end(possible_moves):
+def check_game_s_end(possible_moves, tab_positions):
     if possible_moves:
         return False
     else:
         rem = [k for k, v in list(tab_positions.items()) if v]  # Gets the remainig pieces' positions in the board
-
+    
+    #? rem = remaining
     #! Method to catch linear game over is not working
     if len(rem) == 1:
         return 'Victory'
@@ -184,29 +190,29 @@ def check_game_s_end(possible_moves):
         end_game = True
         for i in range(0, len(rem)):
             for j in range(i+1, len(rem)):
-                if rem[i][0] > rem[j][0] and rem[i][1] == rem[j][1]:
-                    if not tab_positions.get((rem[i][0]+70, rem[i][1])) or not tab_positions.get((rem[j][0]-70, rem[j][1])):
-                        if rem[i][0] - rem[j][0] == 70:
-                            end_game = False
-                            break
+                if rem[i][0] - rem[j][0] == 70 and rem[i][1] == rem[j][1]:
+                    if (not tab_positions.get((rem[i][0]+70, rem[i][1]), True) or 
+                        not tab_positions.get((rem[j][0]-70, rem[j][1]), True)):
+                        end_game = False
+                        break
 
-                elif rem[i][0] < rem[j][0] and rem[i][1] == rem[j][1]:
-                    if not tab_positions.get((rem[i][0]-70, rem[i][1])) or not tab_positions.get((rem[j][0]+70, rem[j][1])):
-                        if rem[j][0] - rem[i][0] == 70:
-                            end_game = False
-                            break
+                elif rem[j][0] - rem[i][0] == 70 and rem[i][1] == rem[j][1]:
+                    if (not tab_positions.get((rem[i][0]-70, rem[i][1]), True) or 
+                        not tab_positions.get((rem[j][0]+70, rem[j][1]), True)):
+                        end_game = False
+                        break
                 
-                elif rem[i][0] == rem[j][0] and rem[i][1] > rem[j][1]:
-                    if not tab_positions.get((rem[i][0], rem[i][1]+70)) or not tab_positions.get((rem[j][0], rem[j][1]-70)):
-                        if rem[i][1] - rem[j][1] == 70:
-                            end_game = False
-                            break
+                elif rem[i][0] == rem[j][0] and rem[i][1] - rem[j][1] == 70:
+                    if (not tab_positions.get((rem[i][0], rem[i][1]+70), True) or 
+                        not tab_positions.get((rem[j][0], rem[j][1]-70), True)):
+                        end_game = False
+                        break
 
-                elif rem[i][0] == rem[j][0] and rem[i][1] < rem[j][1]:
-                    if not tab_positions.get((rem[i][0], rem[i][1]-70)) or not tab_positions.get((rem[j][0], rem[j][1]+70)):
-                        if rem[j][1] - rem[i][1] == 70:
-                            end_game = False
-                            break
+                elif rem[i][0] == rem[j][0] and rem[j][1] - rem[i][1] == 70:
+                    if (not tab_positions.get((rem[i][0], rem[i][1]-70), True) or 
+                        not tab_positions.get((rem[j][0], rem[j][1]+70), True)):
+                        end_game = False
+                        break
         if end_game:
             return 'end_game'
 
@@ -224,13 +230,13 @@ clock = pygame.time.Clock()
 
 
 def montar_jogo():
-    global tab_positions
+    tab_positions = board.copy()
 
     white_b_square = pygame.Surface((70,70))
     white_b_square.fill((221, 193, 136))
 
-    piece = pygame.image.load('c:/users/user/documents/python/hunter-sDungeon/peg-solitarie/game_piece.png').convert()
-    bg = pygame.image.load('c:/users/user/documents/python/hunter-sDungeon/peg-solitarie/beech-red.jpg').convert()
+    piece = pygame.image.load(os.path.join(dir_name, 'game_piece.png')).convert()
+    bg = pygame.image.load(os.path.join(dir_name, 'beech-red.jpg')).convert()
     
     global x1, y1, x2, y2
     cursor_pos = [x1, y1, x2, y2]
@@ -271,17 +277,17 @@ def montar_jogo():
                     cursor_select = False
                 
 
-        draw_game_board(bg, piece, white_b_square)
+        draw_game_board(bg, piece, white_b_square, tab_positions)
         cursor = set_cursor(key_pressed, cursor_direction)
 
         if cursor_select and tab_positions[cursor[0]]:
             pygame.draw.lines(screen, (102, 255, 26), True, cursor, 3)
-            possible_moves = select_available_movements(cursor[0])
+            possible_moves = select_available_movements(cursor[0], tab_positions)
             last_cursor = cursor
 
-            if check_game_s_end(possible_moves) == False:
+            if check_game_s_end(possible_moves, tab_positions) == False:
                 pass
-            elif check_game_s_end(possible_moves) == 'Victory':
+            elif check_game_s_end(possible_moves, tab_positions) == 'Victory':
                 victory_screen = std_font.render('VICOTRY !!!', True, (0,0,0))
                 victory_rect = victory_screen.get_rect()
                 victory_rect.midtop = (600 // 2, 175)
@@ -290,7 +296,7 @@ def montar_jogo():
                 pygame.time.wait(700)
                 break
 
-            elif check_game_s_end(possible_moves) == 'end_game':
+            elif check_game_s_end(possible_moves, tab_positions) == 'end_game':
                 game_over_screen = std_font.render('GAME OVER', True, (0,0,0))
                 game_over_rect = game_over_screen.get_rect()
                 game_over_rect.midtop = (600 // 2, 175)
@@ -300,14 +306,14 @@ def montar_jogo():
                 break
                 
         elif cursor_select and (not tab_positions[cursor[0]]) and possible_moves:
-            move_piece(piece, possible_moves, cursor, last_cursor)
+            move_piece(piece, possible_moves, cursor, last_cursor, tab_positions)
             possible_moves = False
         else:
             pygame.draw.lines(screen, (204, 41, 0), True, cursor, 3)
 
         pygame.display.update()
     
-    desenha_menu()
+    return desenha_menu()
 
 
 def desenha_menu():
